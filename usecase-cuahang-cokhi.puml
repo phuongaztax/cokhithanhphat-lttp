@@ -1,0 +1,253 @@
+' Sơ đồ use case - Hệ thống quản lý cửa hàng đồ cơ khí
+' Mở preview: đặt con trỏ trong một khối @startuml rồi nhấn Alt+D
+' Xuất ảnh toàn bộ: Ctrl+Shift+P > "PlantUML: Export Current File Diagrams"
+
+' =========================================================
+' 0. TỔNG QUÁT
+' =========================================================
+@startuml 0_TongQuat
+left to right direction
+skinparam packageStyle rectangle
+skinparam usecase {
+  BackgroundColor #F7FAFB
+  BorderColor #3A4B57
+}
+skinparam actorStyle awesome
+
+actor "Người dùng" as ND
+actor "Nhân viên\nbán hàng" as NV
+actor "Thủ kho" as TK
+actor "Chủ cửa hàng" as CH
+NV -up-|> ND
+TK -up-|> ND
+CH -up-|> ND
+
+rectangle "Hệ thống quản lý cửa hàng cơ khí" {
+  usecase "Đăng nhập" as UC00
+  package "Bán hàng" {
+    usecase "Tra cứu tồn kho & giá" as UC01
+    usecase "Báo giá cho khách" as UC02
+    usecase "Lập phiếu bán" as UC03
+    usecase "Xử lý khách trả hàng" as UC07
+  }
+  package "Kho" {
+    usecase "Lập phiếu nhập hàng" as UC09
+    usecase "Kiểm kê kho" as UC11
+    usecase "Chuyển kho" as UC21
+  }
+  package "Công nợ" {
+    usecase "Quản lý khách hàng" as UC13
+    usecase "Tra cứu công nợ khách" as UC14
+    usecase "Thu nợ cuối tháng" as UC15
+  }
+  package "Quản trị & báo cáo" {
+    usecase "Quản lý hàng hóa" as UC16
+    usecase "Quản lý nhà cung cấp" as UC18
+    usecase "Quản lý nhân viên" as UC19
+    usecase "Xem báo cáo" as UC20
+    usecase "Hủy phiếu bán" as UC22
+    usecase "Hủy / sửa giá\nphiếu nhập" as UC23
+    usecase "Ghi nợ đầu kỳ" as UC24
+  }
+}
+
+ND --> UC00
+NV --> UC01
+NV --> UC02
+NV --> UC03
+NV --> UC07
+NV --> UC13
+NV --> UC14
+NV --> UC15
+TK --> UC01
+TK --> UC09
+TK --> UC11
+TK --> UC21
+CH --> UC16
+CH --> UC18
+CH --> UC19
+CH --> UC20
+CH --> UC15
+CH --> UC22
+CH --> UC23
+CH --> UC24
+@enduml
+
+' =========================================================
+' 1. BÁN HÀNG & TRẢ HÀNG
+' =========================================================
+@startuml 1_BanHang
+left to right direction
+skinparam packageStyle rectangle
+skinparam actorStyle awesome
+
+actor "Nhân viên\nbán hàng" as NV
+
+rectangle "Phân hệ Bán hàng" {
+  usecase "Tra cứu tồn kho & giá" as UC01
+  usecase "Báo giá cho khách" as UC02
+  usecase "Lập phiếu bán" as UC03
+  usecase "Quy đổi đơn vị tính\n(con / kg / mét)" as UC04
+  usecase "Thu tiền ngay\n(khách lẻ)" as UC05
+  usecase "Ghi công nợ\n(khách thầu)" as UC06
+  usecase "Xử lý khách trả hàng" as UC07
+  usecase "Trừ công nợ /\nhoàn tiền" as UC08
+}
+
+NV --> UC01
+NV --> UC02
+NV --> UC03
+NV --> UC07
+
+UC02 .> UC01 : <<include>>
+UC03 ..> UC04 : <<include>>
+UC05 ..> UC03 : <<extend>>
+UC06 ..> UC03 : <<extend>>
+UC07 ..> UC08 : <<include>>
+
+note right of UC06
+  Lưu số tiền nợ và
+  ngày phát sinh theo phiếu
+end note
+note right of UC07
+  Chỉ nhận lại hàng còn nguyên,
+  cộng lại tồn kho
+end note
+@enduml
+
+' =========================================================
+' 2. KHO
+' =========================================================
+@startuml 2_Kho
+left to right direction
+skinparam packageStyle rectangle
+skinparam actorStyle awesome
+
+actor "Thủ kho" as TK
+
+rectangle "Phân hệ Kho" {
+  usecase "Lập phiếu nhập hàng" as UC09
+  usecase "Ghi giá nhập theo lô" as UC10
+  usecase "Quy đổi đơn vị tính" as UC04
+  usecase "Kiểm kê kho" as UC11
+  usecase "Ghi nhận chênh lệch" as UC12
+  usecase "Tra cứu tồn kho" as UC01
+  usecase "Chuyển kho" as UC21
+}
+
+TK --> UC09
+TK --> UC11
+TK --> UC01
+TK --> UC21
+
+UC09 ..> UC10 : <<include>>
+UC09 ..> UC04 : <<include>>
+UC12 ..> UC11 : <<extend>>
+UC21 ..> UC01 : <<include>>
+UC21 ..> UC04 : <<include>>
+
+note right of UC21
+  Lập phiếu chuyển: kho nguồn -> kho đích,
+  trừ tồn kho nguồn, cộng tồn kho đích
+  (giữ nguyên lô và giá nhập)
+end note
+
+note right of UC12
+  Chỉ ghi khi số đếm thực tế
+  khác sổ sách; báo cho chủ
+end note
+@enduml
+
+' =========================================================
+' 3. CÔNG NỢ & KHÁCH HÀNG
+' =========================================================
+@startuml 3_CongNo
+left to right direction
+skinparam packageStyle rectangle
+skinparam actorStyle awesome
+
+actor "Nhân viên\nbán hàng" as NV
+actor "Chủ cửa hàng" as CH
+
+rectangle "Phân hệ Công nợ" {
+  usecase "Quản lý khách hàng\n(lẻ / thầu)" as UC13
+  usecase "Tra cứu công nợ khách" as UC14
+  usecase "Thu nợ cuối tháng" as UC15
+}
+
+NV --> UC13
+NV --> UC14
+NV --> UC15
+UC13 <-- CH
+UC14 <-- CH
+UC15 <-- CH
+
+UC15 .> UC14 : <<include>>
+@enduml
+
+' =========================================================
+' 4. QUẢN TRỊ & BÁO CÁO
+' =========================================================
+@startuml 4_QuanTri_BaoCao
+left to right direction
+skinparam packageStyle rectangle
+skinparam actorStyle awesome
+
+actor "Chủ cửa hàng" as CH
+
+rectangle "Phân hệ Quản trị & báo cáo" {
+  usecase "Quản lý hàng hóa" as UC16
+  usecase "Khai báo đơn vị\n& hệ số quy đổi" as UC17
+  usecase "Quản lý nhà cung cấp" as UC18
+  usecase "Quản lý nhân viên" as UC19
+  usecase "Xem báo cáo" as UC20
+
+  usecase "Lãi lỗ theo tháng" as R1
+  usecase "Công nợ khách hàng" as R2
+  usecase "Doanh số theo nhân viên" as R3
+  usecase "Hàng sắp hết\n(cần đặt thêm)" as R4
+  usecase "Hàng tồn lâu\nkhông bán" as R5
+  usecase "Chênh lệch kiểm kê" as R6
+
+  usecase "Hủy phiếu bán" as UC22
+  usecase "Hủy / sửa giá\nphiếu nhập" as UC23
+  usecase "Ghi nợ đầu kỳ" as UC24
+}
+
+CH --> UC16
+CH --> UC18
+CH --> UC19
+CH --> UC20
+CH --> UC22
+CH --> UC23
+CH --> UC24
+
+note right of UC22
+  Chỉ khi chưa có phiếu trả hàng và
+  khách chưa trả phần nợ của phiếu;
+  hoàn tồn kho, bỏ khoản nợ
+end note
+note right of UC23
+  Hủy: chỉ khi lô chưa được dùng.
+  Sửa giá: tính lại giá vốn
+  các phiếu bán đã dùng lô
+end note
+note right of UC24
+  Chuyển nợ từ sổ cũ; chỉ cho khách thầu
+  chưa có giao dịch trên phần mềm
+end note
+
+UC16 ..> UC17 : <<include>>
+
+R1 -up-|> UC20
+R2 -up-|> UC20
+R3 -up-|> UC20
+R4 -up-|> UC20
+R5 -up-|> UC20
+R6 -up-|> UC20
+
+note bottom of R1
+  Lãi = doanh thu - giá vốn
+  (giá vốn lấy theo giá nhập từng lô)
+end note
+@enduml

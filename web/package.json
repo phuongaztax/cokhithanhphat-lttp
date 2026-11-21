@@ -1,0 +1,31 @@
+{
+  "name": "cuahang-cokhi",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "test": "tsx scripts/test-nghiep-vu.ts",
+    "reset-db": "node -e \"require('fs').rmSync('data',{recursive:true,force:true});console.log('Đã xóa data/, CSDL mẫu sẽ tạo lại khi chạy app')\"",
+    "db:trong": "tsx scripts/init-db.ts trong",
+    "db:mau": "tsx scripts/init-db.ts mau",
+    "db:nang-cap": "tsx scripts/init-db.ts nang-cap",
+    "docs:chup": "node scripts/chup-man-hinh.mjs http://localhost:3457 ../docs/hinh"
+  },
+  "dependencies": {
+    "better-sqlite3": "^13.2.0",
+    "next": "16.4.6",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "server-only": "^0.0.1"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^9.6.0",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "tsx": "^4.23.15",
+    "typescript": "^5"
+  }
+}

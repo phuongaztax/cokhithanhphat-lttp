@@ -1,0 +1,462 @@
+' Wireframe màn hình - Hệ thống quản lý cửa hàng đồ cơ khí
+' Viết bằng PlantUML Salt, mỗi màn hình một khối @startsalt (không cần Graphviz).
+' Mở preview: đặt con trỏ trong một khối rồi nhấn Alt+D
+'
+' Bảng ánh xạ màn hình -> use case
+'   W00 Đăng nhập .......................... UC00
+'   W01 Trang chính (menu theo vai trò) .... -
+'   W02 Tra cứu tồn kho & báo giá .......... UC01, UC02
+'   W03 Lập phiếu bán ...................... UC03, UC04, UC05, UC06
+'   W04 Xử lý khách trả hàng ............... UC07, UC08
+'   W05 Lập phiếu nhập hàng ................ UC09, UC10, UC04
+'   W06 Kiểm kê kho ........................ UC11, UC12
+'   W07 Chuyển kho ......................... UC21, UC01, UC04
+'   W08 Quản lý khách hàng ................. UC13
+'   W09 Tra cứu công nợ & thu nợ ........... UC14, UC15
+'   W10 Quản lý hàng hóa & đơn vị quy đổi .. UC16, UC17
+'   W11 Quản lý nhà cung cấp ............... UC18
+'   W12 Quản lý nhân viên .................. UC19
+'   W13 Báo cáo ............................ UC20 (R1..R6)
+'   W14 Chi tiết phiếu bán (hủy phiếu) ..... UC22
+'   W15 Chi tiết phiếu nhập (sửa giá/hủy) .. UC23
+'   (W09 có thêm khối Ghi nợ đầu kỳ ........ UC24)
+
+' =========================================================
+' W00. ĐĂNG NHẬP (UC00)
+' =========================================================
+@startsalt W00_DangNhap
+title W00 - Đăng nhập (UC00)
+{+
+  <b>CỬA HÀNG CƠ KHÍ</b>
+  ==
+  Tên đăng nhập | "nv_lan          "
+  Mật khẩu      | "****            "
+  [ ] Ghi nhớ đăng nhập | .
+  ..
+  . | [  Đăng nhập  ]
+}
+@endsalt
+
+' =========================================================
+' W01. TRANG CHÍNH - menu hiển thị theo vai trò
+' =========================================================
+@startsalt W01_TrangChinh
+title W01 - Trang chính (menu theo vai trò)
+{+
+  {* Bán hàng | Kho | Công nợ | Quản trị | Báo cáo | Đăng xuất
+  }
+  { Xin chào: <b>Nguyễn Văn Lan</b> - vai trò: Nhân viên bán hàng | Ca: 21/11/2026 }
+  ==
+  {^"Lối tắt"
+    [Lập phiếu bán (F2)] | [Tra cứu hàng (F3)] | [Khách trả hàng (F4)]
+  }
+  {^"Hôm nay"
+    Số phiếu bán | <b>37</b>
+    Doanh thu    | <b>18.450.000 đ</b>
+    Ghi nợ mới   | <b>4.200.000 đ</b>
+  }
+  {^"Cảnh báo"
+    <color:red>12 mặt hàng dưới mức tồn tối thiểu</color> | [Xem]
+  }
+  ..
+  <i>Menu Kho chỉ hiện với Thủ kho; Quản trị & Báo cáo chỉ hiện với Chủ cửa hàng</i>
+}
+@endsalt
+
+' =========================================================
+' W02. TRA CỨU TỒN KHO & BÁO GIÁ (UC01, UC02)
+' =========================================================
+@startsalt W02_TraCuu_BaoGia
+title W02 - Tra cứu tồn kho & giá / Báo giá (UC01, UC02)
+{+
+  { Tìm hàng | "ốc lục giác M10           " | ^Tất cả nhóm^ | ^Kho chính^ | [Tìm] }
+  ==
+  {#
+    <b>Mã</b> | <b>Tên hàng</b> | <b>Tồn</b> | <b>ĐVT</b> | <b>Giá lẻ</b> | <b>Giá sỉ</b> | .
+    OC010 | Ốc lục giác M10x30 | 2.350 | con | 1.500 / con | 62.000 / kg | [+ Báo giá]
+    OC011 | Ốc lục giác M10x50 | 120 | con | 2.200 / con | 60.000 / kg | [+ Báo giá]
+    DD025 | Dây điện 2x2.5 | 340 | mét | 14.000 / m | 1.250.000 / cuộn | [+ Báo giá]
+  }
+  <i>Tồn hiển thị theo đơn vị cơ sở; chọn dòng để xem tồn theo từng đơn vị quy đổi</i>
+  ==
+  {^"Phiếu báo giá"
+    { Khách | "Anh Tư (thầu)       " | [Chọn khách] }
+    {#
+      <b>Hàng</b> | <b>SL</b> | <b>ĐVT</b> | <b>Đơn giá</b> | <b>Thành tiền</b> | .
+      Ốc lục giác M10x30 | "5   " | ^kg^ | 62.000 | 310.000 | [Xóa]
+      Dây điện 2x2.5 | "50  " | ^mét^ | 14.000 | 700.000 | [Xóa]
+    }
+    { <b>Tổng: 1.010.000 đ</b> }
+    { [In báo giá] | [Chuyển thành phiếu bán] | [Hủy] }
+  }
+}
+@endsalt
+
+' =========================================================
+' W03. LẬP PHIẾU BÁN (UC03, UC04, UC05, UC06)
+' =========================================================
+@startsalt W03_LapPhieuBan
+title W03 - Lập phiếu bán (UC03 + quy đổi ĐVT UC04 + thu tiền UC05 / ghi nợ UC06)
+{+
+  { Số phiếu: <b>PB-20261121-038</b> | Ngày: 21/11/2026 | NV bán: Nguyễn Văn Lan }
+  ==
+  {^"Khách hàng"
+    { () Khách lẻ | (X) Khách thầu | "Anh Tư - 0905xxx123   " | [Tìm] | [+ Khách mới] }
+    Nợ hiện tại: <color:red>8.600.000 đ</color> (từ 02/11/2026)
+  }
+  {^"Hàng bán"
+    Mã / tên hàng | "OC010          " | SL | "5   " | ^kg^ | [Thêm]
+  }
+  {#
+    <b>#</b> | <b>Hàng</b> | <b>SL</b> | <b>ĐVT</b> | <b>Quy đổi</b> | <b>Đơn giá</b> | <b>Thành tiền</b> | .
+    1 | Ốc lục giác M10x30 | 5 | kg | ≈ 400 con | 62.000 | 310.000 | [Xóa]
+    2 | Dây điện 2x2.5 | 50 | mét | 50 mét | 14.000 | 700.000 | [Xóa]
+    3 | Long đền M10 | 200 | con | 200 con | 300 | 60.000 | [Xóa]
+  }
+  <i>ĐVT lấy theo khai báo của hàng (con / kg / mét / cuộn); hệ thống tự quy đổi về đơn vị cơ sở để trừ tồn</i>
+  ==
+  {
+    Tổng tiền hàng | <b>1.070.000 đ</b>
+    Chiết khấu | "0          "
+    <b>Phải trả</b> | <b>1.070.000 đ</b>
+  }
+  {^"Thanh toán"
+    () Thu tiền ngay (khách lẻ) | Khách đưa | "            " | Thối lại | 0
+    (X) Ghi công nợ (khách thầu) | Nợ sau phiếu | <color:red>9.670.000 đ</color> | . | .
+  }
+  { [Lưu & In phiếu (F9)] | [Lưu nháp] | [Hủy] }
+}
+@endsalt
+
+' =========================================================
+' W04. XỬ LÝ KHÁCH TRẢ HÀNG (UC07, UC08)
+' =========================================================
+@startsalt W04_TraHang
+title W04 - Xử lý khách trả hàng (UC07 + trừ công nợ / hoàn tiền UC08)
+{+
+  { Phiếu bán gốc | "PB-20261118-012   " | [Tìm phiếu] }
+  { Khách: Anh Tư (thầu) | Ngày bán: 18/11/2026 | Hình thức: Ghi nợ }
+  ==
+  {#
+    <b>Trả</b> | <b>Hàng</b> | <b>Đã mua</b> | <b>SL trả</b> | <b>ĐVT</b> | <b>Còn nguyên?</b> | <b>Tiền trả lại</b>
+    [X] | Ốc lục giác M10x30 | 5 kg | "1   " | kg | [X] Còn nguyên | 62.000
+    [ ] | Dây điện 2x2.5 | 50 mét | "    " | mét | [ ] Còn nguyên | 0
+  }
+  <color:red>Chỉ nhận lại hàng còn nguyên; hàng nhận lại được cộng vào tồn kho</color>
+  { Lý do trả | "Mua dư                                   " }
+  ==
+  {^"Xử lý tiền"
+    (X) Trừ vào công nợ | Nợ trước: 9.670.000 | Nợ sau: <b>9.608.000 đ</b>
+    () Hoàn tiền mặt (khách lẻ) | Hoàn: 0 | .
+  }
+  { [Lưu phiếu trả] | [In] | [Hủy] }
+}
+@endsalt
+
+' =========================================================
+' W05. LẬP PHIẾU NHẬP HÀNG (UC09, UC10, UC04)
+' =========================================================
+@startsalt W05_PhieuNhap
+title W05 - Lập phiếu nhập hàng (UC09 + giá nhập theo lô UC10 + quy đổi ĐVT UC04)
+{+
+  { Số phiếu: <b>PN-20261121-004</b> | Ngày nhập: "21/11/2026" | Thủ kho: Trần Văn Bình }
+  { Nhà cung cấp | ^Công ty Bulong Việt Đức^ | Kho nhập | ^Kho chính^ }
+  ==
+  {^"Thêm hàng"
+    Mã / tên | "OC010         " | SL | "50  " | ^kg^ | Giá nhập | "48.000   " | / kg | [Thêm]
+  }
+  {#
+    <b>Hàng</b> | <b>SL</b> | <b>ĐVT</b> | <b>Quy đổi</b> | <b>Giá nhập</b> | <b>Thành tiền</b> | <b>Mã lô</b> | .
+    Ốc lục giác M10x30 | 50 | kg | ≈ 4.000 con | 48.000 | 2.400.000 | L-OC010-2611 | [Xóa]
+    Dây điện 2x2.5 | 2 | cuộn | 200 mét | 980.000 | 1.960.000 | L-DD025-2611 | [Xóa]
+  }
+  <i>Mỗi dòng nhập tạo một lô mới giữ giá nhập riêng; giá lô trước để tham khảo:</i>
+  <i>OC010 - lô 10/2026: 46.500 / kg</i>
+  ==
+  { Tổng tiền nhập: <b>4.360.000 đ</b> | Ghi chú | "                         " }
+  { [Lưu phiếu nhập] | [In] | [Hủy] }
+}
+@endsalt
+
+' =========================================================
+' W06. KIỂM KÊ KHO (UC11, UC12)
+' =========================================================
+@startsalt W06_KiemKe
+title W06 - Kiểm kê kho (UC11 + ghi nhận chênh lệch UC12)
+{+
+  { Đợt kiểm kê: <b>KK-2026-11</b> | Kho | ^Kho chính^ | Nhóm | ^Ốc vít^ | [Tải danh sách] }
+  ==
+  {#
+    <b>Mã</b> | <b>Hàng</b> | <b>ĐVT</b> | <b>Sổ sách</b> | <b>Thực tế</b> | <b>Lệch</b> | <b>Ghi chú</b>
+    OC010 | Ốc lục giác M10x30 | con | 6.350 | "6.300 " | <color:red>-50</color> | "rơi vãi      "
+    OC011 | Ốc lục giác M10x50 | con | 120 | "120   " | 0 | "             "
+    LD010 | Long đền M10 | con | 1.800 | "1.820 " | <color:blue>+20</color> | "             "
+  }
+  { [X] Chỉ hiện dòng bị lệch | Đã đếm: 3/48 mặt hàng }
+  ==
+  { Tổng dòng lệch: <b>2</b> | Giá trị lệch: <b>-69.000 đ</b> }
+  { [Lưu tạm] | [Chốt kiểm kê & báo chủ cửa hàng] | [Hủy] }
+  <i>Chỉ dòng có Thực tế khác Sổ sách mới được ghi nhận chênh lệch; khi chốt, tồn kho cập nhật theo thực tế</i>
+}
+@endsalt
+
+' =========================================================
+' W07. CHUYỂN KHO (UC21, UC01, UC04)
+' =========================================================
+@startsalt W07_ChuyenKho
+title W07 - Chuyển kho (UC21, tra tồn UC01, quy đổi ĐVT UC04)
+{+
+  { Số phiếu: <b>PC-20261121-001</b> | Ngày: 21/11/2026 | Thủ kho: Trần Văn Bình }
+  { Kho nguồn | ^Kho chính^ | --> | Kho đích | ^Kho phụ (quầy)^ }
+  ==
+  {^"Thêm hàng"
+    Mã / tên | "DD025        " | Lô | ^L-DD025-2611 (còn 200 m)^ | SL | "100 " | ^mét^ | [Thêm]
+  }
+  {#
+    <b>Hàng</b> | <b>Lô</b> | <b>Tồn kho nguồn</b> | <b>SL chuyển</b> | <b>ĐVT</b> | <b>Giá nhập lô</b> | .
+    Dây điện 2x2.5 | L-DD025-2611 | 200 mét | 100 | mét | 9.800 / m | [Xóa]
+    Ốc lục giác M10x30 | L-OC010-2611 | 4.000 con | 10 | kg (≈ 800 con) | 48.000 / kg | [Xóa]
+  }
+  <i>Trừ tồn kho nguồn, cộng tồn kho đích; giữ nguyên lô và giá nhập</i>
+  <color:red>SL chuyển không được vượt tồn kho nguồn của lô</color>
+  ==
+  { [Lưu phiếu chuyển] | [In] | [Hủy] }
+}
+@endsalt
+
+' =========================================================
+' W08. QUẢN LÝ KHÁCH HÀNG (UC13)
+' =========================================================
+@startsalt W08_KhachHang
+title W08 - Quản lý khách hàng (UC13)
+{+
+  { Tìm | "tên / SĐT          " | Loại | ^Tất cả^ | [Tìm] | [+ Thêm khách] }
+  ==
+  {#
+    <b>Mã</b> | <b>Tên khách</b> | <b>SĐT</b> | <b>Loại</b> | <b>Hạn mức nợ</b> | <b>Đang nợ</b> | .
+    KH001 | Anh Tư | 0905xxx123 | Thầu | 30.000.000 | 9.608.000 | [Sửa]
+    KH002 | Công ty XD Hòa Phát | 0236xxx456 | Thầu | 100.000.000 | 42.150.000 | [Sửa]
+    KH000 | Khách lẻ | - | Lẻ | - | - | .
+  }
+  ==
+  {^"Thông tin khách hàng"
+    Tên khách | "Anh Tư                    "
+    Số điện thoại | "0905xxx123                "
+    Địa chỉ | "12 Lê Lợi, Q. Hải Châu     "
+    Loại khách | {(X) Thầu (thanh toán cuối tháng) | () Lẻ (trả ngay)}
+    Hạn mức nợ | "30.000.000                "
+    Ghi chú | "                          "
+    [Lưu] | [Hủy]
+  }
+}
+@endsalt
+
+' =========================================================
+' W09. TRA CỨU CÔNG NỢ & THU NỢ CUỐI THÁNG (UC14, UC15)
+' =========================================================
+@startsalt W09_CongNo_ThuNo
+title W09 - Tra cứu công nợ (UC14) & Thu nợ cuối tháng (UC15)
+{+
+  {/ <b>Tra cứu công nợ</b> | Thu nợ }
+  { Khách | "Anh Tư            " | Từ | "01/11/2026" | Đến | "30/11/2026" | [Xem] }
+  ==
+  { Nợ đầu kỳ: 0 | Phát sinh: 9.670.000 | Đã trừ/trả: 62.000 | <b>Còn nợ: 9.608.000 đ</b> }
+  {#
+    <b>Ngày</b> | <b>Chứng từ</b> | <b>Diễn giải</b> | <b>Phát sinh nợ</b> | <b>Giảm nợ</b> | <b>Số dư</b> | <b>Số ngày nợ</b>
+    02/11/2026 | PB-...-005 | Mua hàng | 3.400.000 | . | 3.400.000 | 19
+    10/11/2026 | PB-...-021 | Mua hàng | 5.200.000 | . | 8.600.000 | 11
+    18/11/2026 | PB-...-012 | Mua hàng | 1.070.000 | . | 9.670.000 | 3
+    21/11/2026 | TH-...-002 | Trả hàng | . | 62.000 | 9.608.000 | .
+  }
+  { [In bảng kê công nợ] | [Thu nợ khách này] }
+  ==
+  {^"Thu nợ (UC15)"
+    Khách | Anh Tư | Còn nợ | <b>9.608.000 đ</b>
+    Số tiền thu | "9.608.000      " | Hình thức | ^Tiền mặt^
+    Ngày thu | "30/11/2026     " | Người thu | Nguyễn Văn Lan
+    Ghi chú | "Thanh toán T11 " | . | .
+    { [Lưu phiếu thu & In] | [Hủy] }
+  }
+  <i>Thu đủ -> tất toán; thu một phần -> trừ dần vào các phiếu nợ cũ nhất trước</i>
+  ..
+  {^"Ghi nợ đầu kỳ (UC24 – chỉ chủ cửa hàng thấy)"
+    { ^Thầu Mới^ | Số nợ | "2.000.000   " | Nợ từ ngày | "15/01/2026" | "Chuyển từ sổ công nợ cũ   " | [Ghi nợ đầu kỳ] }
+    <i>Chỉ cho khách thầu chưa có giao dịch công nợ trên phần mềm</i>
+  }
+}
+@endsalt
+
+' =========================================================
+' W10. QUẢN LÝ HÀNG HÓA & ĐƠN VỊ QUY ĐỔI (UC16, UC17)
+' =========================================================
+@startsalt W10_HangHoa
+title W10 - Quản lý hàng hóa (UC16) + Khai báo đơn vị & hệ số quy đổi (UC17)
+{+
+  { Tìm | "mã / tên hàng      " | Nhóm | ^Tất cả^ | [Tìm] | [+ Thêm hàng] }
+  ==
+  {#
+    <b>Mã</b> | <b>Tên hàng</b> | <b>Nhóm</b> | <b>ĐV cơ sở</b> | <b>Tồn tối thiểu</b> | <b>Trạng thái</b> | .
+    OC010 | Ốc lục giác M10x30 | Ốc vít | con | 1.000 | Đang bán | [Sửa]
+    DD025 | Dây điện 2x2.5 | Dây điện | mét | 100 | Đang bán | [Sửa]
+    BL999 | Bulong M24 inox | Ốc vít | con | 0 | <color:gray>Ngừng nhập</color> | [Sửa]
+  }
+  ==
+  {^"Thông tin hàng: OC010"
+    Mã hàng | "OC010                  " | Nhóm | ^Ốc vít^
+    Tên hàng | "Ốc lục giác M10x30     " | Trạng thái | ^Đang bán^
+    Đơn vị cơ sở | ^con^ | Tồn tối thiểu | "1.000      "
+  }
+  {^"Đơn vị tính & hệ số quy đổi (UC17)"
+    {#
+      <b>Đơn vị</b> | <b>= ? đơn vị cơ sở</b> | <b>Giá bán</b> | <b>Dùng khi</b> | .
+      con | 1 | "1.500    " | Bán lẻ | .
+      kg | "80     " | "62.000   " | Bán sỉ / nhập | [Xóa]
+      hộp | "500    " | "700.000  " | Bán sỉ | [Xóa]
+    }
+    [+ Thêm đơn vị]
+  }
+  { [Lưu] | [Hủy] }
+}
+@endsalt
+
+' =========================================================
+' W11. QUẢN LÝ NHÀ CUNG CẤP (UC18)
+' =========================================================
+@startsalt W11_NhaCungCap
+title W11 - Quản lý nhà cung cấp (UC18)
+{+
+  { Tìm | "tên NCC            " | [Tìm] | [+ Thêm NCC] }
+  ==
+  {#
+    <b>Mã</b> | <b>Tên nhà cung cấp</b> | <b>Người liên hệ</b> | <b>SĐT</b> | <b>Lần nhập gần nhất</b> | .
+    NCC01 | Công ty Bulong Việt Đức | Chị Hạnh | 0283xxx111 | 21/11/2026 | [Sửa]
+    NCC02 | Cadivi Đà Nẵng | Anh Quang | 0236xxx222 | 05/11/2026 | [Sửa]
+  }
+  ==
+  {^"Thông tin nhà cung cấp"
+    Tên NCC | "Công ty Bulong Việt Đức      "
+    Người liên hệ | "Chị Hạnh                     "
+    Số điện thoại | "0283xxx111                   "
+    Địa chỉ | "KCN Tân Bình, TP.HCM         "
+    Mã số thuế | "0301234567                   "
+    [Lưu] | [Xem lịch sử phiếu nhập] | [Hủy]
+  }
+}
+@endsalt
+
+' =========================================================
+' W12. QUẢN LÝ NHÂN VIÊN (UC19)
+' =========================================================
+@startsalt W12_NhanVien
+title W12 - Quản lý nhân viên (UC19)
+{+
+  [+ Thêm nhân viên]
+  ==
+  {#
+    <b>Mã</b> | <b>Họ tên</b> | <b>Tài khoản</b> | <b>Vai trò</b> | <b>Trạng thái</b> | .
+    NV01 | Nguyễn Văn Lan | nv_lan | Nhân viên bán hàng | Hoạt động | [Sửa]
+    NV02 | Lê Thị Mai | nv_mai | Nhân viên bán hàng | Hoạt động | [Sửa]
+    NV03 | Trần Văn Bình | tk_binh | Thủ kho | Hoạt động | [Sửa]
+    NV00 | Chủ cửa hàng | admin | Chủ cửa hàng | Hoạt động | .
+  }
+  ==
+  {^"Thông tin nhân viên"
+    Họ tên | "Lê Thị Mai               "
+    Số điện thoại | "0912xxx789               "
+    Tài khoản | "nv_mai                   "
+    Vai trò | ^Nhân viên bán hàng^
+    Trạng thái | {(X) Hoạt động | () Khóa}
+    [Lưu] | [Đặt lại mật khẩu] | [Hủy]
+  }
+}
+@endsalt
+
+' =========================================================
+' W13. BÁO CÁO (UC20 - R1..R6)
+' =========================================================
+@startsalt W13_BaoCao
+title W13 - Xem báo cáo (UC20: R1 lãi lỗ, R2 công nợ, R3 doanh số NV, R4 sắp hết, R5 tồn lâu, R6 chênh lệch kiểm kê)
+{+
+  {/ <b>Lãi lỗ</b> | Công nợ | Doanh số NV | Sắp hết | Tồn lâu | Chênh lệch KK }
+  { Kỳ | ^Tháng 11/2026^ | [Xem] | [Xuất Excel] | [In] }
+  ==
+  {^"R1 - Lãi lỗ tháng 11/2026"
+    Doanh thu bán hàng | 412.300.000
+    (-) Hàng bị trả lại | 1.240.000
+    (-) Giá vốn (theo giá nhập từng lô) | 318.900.000
+    <b>Lãi gộp</b> | <b>92.160.000 đ</b>
+  }
+  ..
+  <i>Mỗi tab dùng chung bộ lọc kỳ; mẫu nội dung các tab còn lại:</i>
+  {^"R3 - Doanh số theo nhân viên"
+    {#
+      <b>Nhân viên</b> | <b>Số phiếu</b> | <b>Doanh số</b> | <b>Tỉ lệ</b>
+      Nguyễn Văn Lan | 612 | 228.400.000 | 55%
+      Lê Thị Mai | 540 | 183.900.000 | 45%
+    }
+  }
+  {^"R4 - Hàng sắp hết (tồn <= tồn tối thiểu)"
+    {#
+      <b>Hàng</b> | <b>Tồn</b> | <b>Tối thiểu</b> | <b>NCC gần nhất</b> | .
+      Dây điện 2x2.5 | 80 mét | 100 | Cadivi Đà Nẵng | [Lập phiếu nhập]
+    }
+  }
+  {^"R5 - Hàng tồn lâu không bán"
+    Không bán trong | ^365 ngày^
+    {#
+      <b>Hàng</b> | <b>Tồn</b> | <b>Lần bán cuối</b> | <b>Giá trị tồn</b> | .
+      Bulong M24 inox | 300 con | 14/10/2025 | 4.500.000 | [Đánh dấu ngừng nhập]
+    }
+  }
+}
+@endsalt
+
+' =========================================================
+' W14. CHI TIẾT PHIẾU BÁN – HỦY PHIẾU (UC22, chủ cửa hàng)
+' =========================================================
+@startsalt W14_ChiTietPhieuBan
+title W14 - Chi tiết phiếu bán / Hủy phiếu bán (UC22)
+{+
+  { <b>PHIẾU BÁN HÀNG</b> | . | Số: <b>PB-20261121-038</b> | Ngày: 21/11/2026 09:15 }
+  { Khách: <b>Anh Tư</b> | · NV bán: Nguyễn Văn Lan | · Kho xuất: Kho chính | · Thanh toán: <color:red>Ghi công nợ</color> }
+  {#
+    <b>#</b> | <b>Hàng</b> | <b>SL</b> | <b>ĐVT</b> | <b>Đơn giá</b> | <b>Thành tiền</b> | <b>Đã trả lại</b>
+    1 | Ốc lục giác M10x30 | 5 | kg | 62.000 | 310.000 | .
+    2 | Dây điện 2x2.5 | 20 | mét | 14.000 | 280.000 | .
+    . | . | . | . | <b>Phải trả</b> | <b>590.000 đ</b> | .
+  }
+  ==
+  { [In] | [Lập phiếu mới] | [Khách trả hàng] | [Danh sách phiếu bán] | [<color:red>Hủy phiếu</color>] }
+  <i>Nút "Hủy phiếu" chỉ chủ cửa hàng thấy, khi phiếu chưa có phiếu trả hàng. Bấm -> hỏi lý do.</i>
+  ..
+  <color:red><b>PHIẾU ĐÃ HỦY</b> lúc 21/11/2026 16:10 bởi Phạm Minh Hùng. Lý do: Lập nhầm khách.</color>
+  <color:red>Hàng đã được cộng lại vào kho, khoản nợ của phiếu đã được bỏ.</color>
+  <i>(Khung đỏ ở trên hiện thay cho nút Hủy khi phiếu đã hủy; phiếu hủy bị loại khỏi báo cáo)</i>
+}
+@endsalt
+
+' =========================================================
+' W15. CHI TIẾT PHIẾU NHẬP – SỬA GIÁ / HỦY PHIẾU (UC23, chủ cửa hàng)
+' =========================================================
+@startsalt W15_ChiTietPhieuNhap
+title W15 - Chi tiết phiếu nhập / Sửa giá nhập / Hủy phiếu nhập (UC23)
+{+
+  { <b>PHIẾU NHẬP HÀNG</b> | . | Số: <b>PN-20261106-001</b> | Ngày: 06/11/2026 }
+  { Nhà cung cấp: <b>Công ty Bulong Việt Đức</b> | · Kho nhập: Kho chính | · Thủ kho: Trần Văn Bình }
+  {#
+    <b>Hàng</b> | <b>SL</b> | <b>ĐVT</b> | <b>Giá nhập</b> | <b>Thành tiền</b> | <b>Lô</b> | <b>Lô còn</b> | <b>Tình trạng lô</b>
+    Ốc lục giác M10x30 | 50 | kg | { "49.000  " | / kg | [Lưu] | [Bỏ] } | 2.450.000 | L-OC010-2611 | 4.000 con | đã bán
+    Long đền M10 | 10 | kg | 40.000 [sửa] | 400.000 | L-LD010-2611 | 2.000 con | chưa dùng
+  }
+  <i>Sửa giá: giá vốn các phiếu bán / trả hàng đã dùng lô được tính lại (lệch kiểm kê đã chốt giữ nguyên).</i>
+  ==
+  { [In] | [Về phiếu nhập] | [<color:red>Hủy phiếu</color>] }
+  <i>Hủy phiếu chỉ được khi chưa lô nào được bán / chuyển kho / kiểm kê; tồn các lô về 0.</i>
+  {^"Lịch sử chỉnh sửa"
+    {#
+      <b>Thời gian</b> | <b>Người sửa</b> | <b>Nội dung</b>
+      21/11/2026 16:10 | Phạm Minh Hùng | Ốc lục giác M10x30 (lô L-OC010-2611): giá nhập 48.000 -> 49.000 đ / kg; tính lại giá vốn 3 dòng bán
+    }
+  }
+}
+@endsalt

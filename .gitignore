@@ -1,0 +1,21 @@
+# Ảnh sơ đồ / wireframe xuất ra (sinh lại bằng PlantUML hoặc tools/gen_drawio_wireframe.py)
+/out/
+
+# Python
+__pycache__/
+*.pyc
+
+# Cấu hình Claude Code cá nhân
+.claude/settings.local.json
+
+# Hệ điều hành / trình soạn thảo
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# CSDL và bản sao lưu (phòng khi đặt ngoài web/data)
+*.db
+*.db-shm
+*.db-wal
+*.saoluu-*
