@@ -11,6 +11,8 @@ nhập hàng theo lô với giá nhập riêng, quy đổi đơn vị tính (con
 | [web/](web/README.md) | Ứng dụng Next.js 16 + SQLite |
 | [tools/](tools/) | Script sinh wireframe draw.io |
 
+**Bản dùng thử:** https://cokhithanhphat-lttp.vercel.app (dữ liệu mẫu, tự khôi phục – không dùng cho số liệu thật).
+
 ## Chạy thử nhanh
 
 ```bash

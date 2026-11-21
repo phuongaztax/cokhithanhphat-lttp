@@ -2,6 +2,7 @@ import { requireUser, can, ACCESS } from "@/lib/auth";
 import { ROLE_LABEL } from "@/lib/util";
 import { logoutAction } from "../actions";
 import Nav, { type NavGroup } from "./Nav";
+import DemoBanner from "@/components/DemoBanner";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const user = await requireUser();
@@ -42,6 +43,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         <span className="who">{user.full_name} · {ROLE_LABEL[user.role]}</span>
         <form action={logoutAction}><button>Đăng xuất</button></form>
       </header>
+      <DemoBanner />
       <Nav groups={groups} />
       <main className="page">{children}</main>
     </>

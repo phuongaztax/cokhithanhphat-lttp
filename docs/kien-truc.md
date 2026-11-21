@@ -137,14 +137,18 @@ Chứng từ đã hủy (`status = 'huy'`) vẫn giữ lại để tra cứu nh�
 - Khởi tạo: `npm run db:mau` (dữ liệu mẫu) / `npm run db:trong -- --pass <mk>` (CSDL trống: admin, 2 kho, khách lẻ – `seed.seedEmpty`);
   thêm `--force` để thay CSDL đang có (file cũ được đổi tên `*.saoluu-<thời điểm>`, không xóa). Script: `web/scripts/init-db.ts`.
 - Kiểm thử có kiểm tra nâng cấp từ CSDL phiên bản 0 có dữ liệu (`migrate`) và CSDL trống.
-- Hình cho `docs/huong-dan-su-dung.md`: `npm run docs:chup` (`web/scripts/chup-man-hinh.mjs`, điều khiển Edge/Chrome qua DevTools Protocol) – chạy trên server + CSDL mẫu riêng (xem `docs/cai-dat-van-hanh.md` mục 8). Đổi giao diện / luồng màn hình → chụp lại.
+- Hình cho `docs/huong-dan-su-dung.md`: `npm run docs:chup` (`web/scripts/chup-man-hinh.mjs`, điều khiển Edge/Chrome qua DevTools Protocol) – chạy trên server + CSDL mẫu riêng (xem `docs/cai-dat-van-hanh.md` mục 9). Đổi giao diện / luồng màn hình → chụp lại.
 
 ## 8. Vận hành
 
 - Dev: `cd web && npm run dev` (cổng 3000). Production: `npm run build && npm start`.
-- Biến môi trường: `DB_FILE` (đường dẫn CSDL), `DB_INIT=trong` (CSDL mới tự tạo sẽ trống thay vì có dữ liệu mẫu),
+- Biến môi trường: `DEMO_MODE=1` (bật dải báo bản dùng thử; tự bật trên Vercel), `DB_FILE` (đường dẫn CSDL), `DB_INIT=trong` (CSDL mới tự tạo sẽ trống thay vì có dữ liệu mẫu),
   `ADMIN_PASSWORD` (mật khẩu admin khi tạo CSDL trống, mặc định `admin123`), `HTTPS=1` (bật cookie `secure` khi chạy sau HTTPS).
 - Sao lưu: chép file `data/cuahang.db` (kèm `-wal`, `-shm` nếu đang chạy) hoặc dùng `sqlite3 .backup`.
+- **Bản demo trên Vercel** (https://cokhithanhphat-lttp.vercel.app, Root Directory = `web`): Vercel chạy serverless, ổ đĩa chỉ ghi được ở `/tmp`
+  và không giữ lâu, các instance không dùng chung file. Khi có biến `VERCEL` mà không đặt `DB_FILE`, `lib/db.ts` dùng `/tmp/cuahang.db`
+  (tự tạo dữ liệu mẫu ở mỗi lần khởi động lạnh) và bật `DEMO_MODE` → `components/DemoBanner.tsx` hiện dải "Bản dùng thử".
+  **Không dùng bản Vercel cho dữ liệu thật**; muốn dữ liệu bền trên Vercel phải chuyển sang CSDL từ xa (VD Turso/libSQL – cần đổi lớp truy cập CSDL sang bất đồng bộ).
 
 ## 9. Nhật ký thay đổi kiến trúc
 
@@ -152,6 +156,7 @@ Ghi **mới nhất lên đầu**. Mỗi mục: ngày · tính năng · thay đ�
 
 | Ngày | Tính năng | Thay đổi | Use case |
 |---|---|---|---|
+| 2026-11-21 | Bản demo trên Vercel | `lib/db.ts`: trên Vercel dùng `/tmp/cuahang.db` + `DEMO_MODE`; `components/DemoBanner.tsx` ở layout và trang đăng nhập; biến `DEMO_MODE`. Dữ liệu demo không bền (về dữ liệu mẫu khi Vercel khởi động lại). | – |
 | 2026-11-21 | Hướng dẫn sử dụng có hình; sửa thông báo chốt kiểm kê | Script chụp màn hình `scripts/chup-man-hinh.mjs` (`npm run docs:chup`), 40 hình ở `docs/hinh/`. Sửa lỗi: sau khi chốt kiểm kê, thông báo kết quả bị mất do phiếu được dựng lại → `/kho/kiem-ke/[id]?lech=&gt=` hiển thị kết quả. Menu thả xuống tăng độ đục (giao diện). | UC11, UC12 |
 | 2026-11-21 | Bổ sung phần thiếu: nâng cấp CSDL, CSDL trống, hủy / sửa chứng từ, nợ đầu kỳ | CSDL v1 (`lib/migrations.ts`, `PRAGMA user_version`): cột `status`/hủy ở `sales`, `purchase_receipts`; bảng `return_item_lots`, `change_log`; `debt_entries.doc_type` + `dau_ky`. Service: `sales.cancelSale`, `warehouse.cancelPurchase/updatePurchasePrice/getPurchase`, `debt.createOpeningDebt`, `seed.seedEmpty`; `createReturn` ghi `return_item_lots`; báo cáo loại chứng từ hủy. Route mới `/kho/nhap/[id]`; nút hủy ở `/ban-hang/[id]`; khối nợ đầu kỳ ở `/cong-no`. Quyền `quanTri` thêm UC22–UC24. Script `init-db.ts` (`db:trong`, `db:mau`, `db:nang-cap`), biến `DB_INIT`, `ADMIN_PASSWORD`. Kiểm thử 17 → 24 | UC22, UC23, UC24 |
 | 2026-11-21 | Khởi tạo ứng dụng | Next.js 16 + SQLite; 17 bảng; services inventory/sales/debt/warehouse/master/reports; 14 màn hình W00–W13; phân quyền theo vai trò; 17 kiểm thử nghiệp vụ | UC00–UC21 |

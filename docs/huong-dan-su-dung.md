@@ -473,4 +473,4 @@ Dùng **khi mới bắt đầu dùng phần mềm**, để chuyển số nợ đ
 
 ---
 
-*Hình trong tài liệu được chụp tự động bằng `web/scripts/chup-man-hinh.mjs` (xem [cai-dat-van-hanh.md](cai-dat-van-hanh.md) mục 8). Khi giao diện thay đổi, chạy lại script để cập nhật hình.*
+*Hình trong tài liệu được chụp tự động bằng `web/scripts/chup-man-hinh.mjs` (xem [cai-dat-van-hanh.md](cai-dat-van-hanh.md) mục 9). Khi giao diện thay đổi, chạy lại script để cập nhật hình.*

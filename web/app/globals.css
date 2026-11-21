@@ -211,6 +211,12 @@ table.tbl input.sm, table.tbl input.md, table.tbl select.sm, table.tbl select.md
 
 .actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
 
+/* ---------------- dải báo bản dùng thử */
+.demo-banner {
+  background: rgba(255, 213, 79, 0.92); color: #4a3800; text-align: center; font-size: 13px;
+  padding: 6px 16px; border-bottom: 1px solid rgba(160, 120, 0, 0.4); position: relative; z-index: 35;
+}
+
 /* ---------------- đăng nhập */
 .login-wrap { min-height: 100vh; display: grid; place-items: center; padding: 16px; }
 .login-box {

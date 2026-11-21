@@ -50,7 +50,15 @@ CSDL trống chỉ có: tài khoản `admin` (chủ cửa hàng), 2 kho (Kho ch�
 
 Cách khác: đặt biến môi trường `DB_INIT=trong` (và `ADMIN_PASSWORD=...`) trước khi chạy lần đầu – CSDL tự tạo sẽ trống thay vì có dữ liệu mẫu.
 
-## 4. Chạy hằng ngày
+## 4. Bản demo trên Vercel
+
+Có bản dùng thử tại **https://cokhithanhphat-lttp.vercel.app** (tài khoản mẫu như mục 2).
+
+- Mọi trang có dải vàng **"Bản dùng thử"**: dữ liệu **tự trở về dữ liệu mẫu** mỗi khi Vercel khởi động lại máy chạy (sau một lúc không có người dùng, hoặc khi deploy lại), và hai người dùng cùng lúc có thể thấy dữ liệu khác nhau.
+- Chỉ dùng để xem thử, trình diễn, nộp bài. **Không nhập số liệu thật** vào bản này – cửa hàng dùng thật thì chạy trên máy của cửa hàng (mục 2–3).
+- Deploy lại (người phát triển): `cd web && npx vercel deploy --prod` (dự án Vercel `cokhithanhphat-lttp`, Root Directory `web`).
+
+## 5. Chạy hằng ngày
 
 - Mở cửa sổ dòng lệnh trên máy chủ: `cd web` rồi `npm start`. Giữ cửa sổ mở trong giờ bán hàng.
 - Muốn tự chạy khi bật máy: dùng Task Scheduler (Windows) hoặc `pm2` (`npm i -g pm2`, `pm2 start npm --name cuahang -- start`, `pm2 save`).
@@ -63,7 +71,7 @@ Cách khác: đặt biến môi trường `DB_INIT=trong` (và `ADMIN_PASSWORD=.
 | `ADMIN_PASSWORD` | Mật khẩu `admin` khi tạo CSDL trống (≥ 6 ký tự) | `admin123` |
 | `HTTPS` | Đặt `1` khi chạy sau HTTPS để cookie đăng nhập bật cờ `secure` | không đặt |
 
-## 5. Sao lưu và khôi phục
+## 6. Sao lưu và khôi phục
 
 Toàn bộ dữ liệu nằm trong `web/data/`.
 
@@ -72,17 +80,17 @@ Toàn bộ dữ liệu nằm trong `web/data/`.
   Không chép riêng file `.db` khi đang chạy vì có thể thiếu phần dữ liệu nằm trong file `-wal`.
 - **Khôi phục:** tắt phần mềm, chép file sao lưu thành `web/data/cuahang.db` (xóa `cuahang.db-wal`, `cuahang.db-shm` nếu có), chạy lại.
 
-## 6. Nâng cấp phần mềm
+## 7. Nâng cấp phần mềm
 
 Khi cập nhật mã nguồn phiên bản mới, CSDL đang dùng **tự được nâng cấp** lần đầu phần mềm mở nó (dữ liệu giữ nguyên).
 Nên làm theo thứ tự:
 
-1. Tắt phần mềm, **sao lưu** thư mục `web/data/` (mục 5).
+1. Tắt phần mềm, **sao lưu** thư mục `web/data/` (mục 6).
 2. Cập nhật mã nguồn, chạy `npm install` và `npm run build`.
 3. (Tùy chọn) chạy `npm run db:nang-cap` để nâng cấp và xem thông báo phiên bản trước khi mở phần mềm.
 4. `npm start`.
 
-## 7. Khắc phục sự cố
+## 8. Khắc phục sự cố
 
 | Hiện tượng | Cách xử lý |
 |---|---|
@@ -93,7 +101,7 @@ Nên làm theo thứ tự:
 | Báo "Đã có CSDL … Thêm --force" | Lệnh `db:trong` / `db:mau` không ghi đè CSDL đang có nếu thiếu `--force`. |
 | Trang báo "Lỗi hệ thống" | Xem thông báo lỗi ở cửa sổ dòng lệnh đang chạy phần mềm, gửi cho người phát triển. |
 
-## 8. Dành cho người phát triển
+## 9. Dành cho người phát triển
 
 - Chế độ phát triển: `npm run dev` (tự tải lại khi sửa code). Kiểm thử nghiệp vụ: `npm test`.
 - Kiến trúc, mô hình dữ liệu và quy tắc cập nhật tài liệu: [kien-truc.md](kien-truc.md), [../CLAUDE.md](../CLAUDE.md).
